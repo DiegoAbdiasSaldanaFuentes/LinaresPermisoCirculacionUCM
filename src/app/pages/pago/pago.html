@@ -1,0 +1,41 @@
+<div class="row justify-content-center mt-4" *ngIf="vehiculo">
+  <div class="col-md-6">
+    <div class="card shadow-sm border-0">
+      <div class="card-header text-white" style="background-color: #9fc3e2;">
+        <h4 class="mb-0 text-dark">Pago de Permiso de Circulación</h4>
+      </div>
+      <div class="card-body">
+        <h5 class="text-secondary">Resumen del Vehículo</h5>
+        <div class="mb-3 p-3 bg-light rounded">
+          <p class="mb-1"><strong>Patente:</strong> <span class="text-uppercase">{{ vehiculo.patente }}</span></p>
+          <p class="mb-1"><strong>Propietario:</strong> {{ vehiculo.nombrePropietario }}</p>
+          <p class="mb-0"><strong>Monto Total:</strong> <span class="text-danger fw-bold">${{ vehiculo.monto }}</span></p>
+        </div>
+        
+        <h5 class="text-secondary mt-4">Medio de Pago (Simulado)</h5>
+        <form (ngSubmit)="procesarPago()" #pagoForm="ngForm">
+          <div class="mb-3">
+            <label class="form-label">Titular de la Tarjeta</label>
+            <input type="text" class="form-control" name="titular" [(ngModel)]="tarjeta.titular" required #titular="ngModel" [ngClass]="{'is-invalid': titular.invalid && titular.touched}">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Número de Tarjeta</label>
+            <input type="text" class="form-control" name="numero" [(ngModel)]="tarjeta.numero" maxlength="16" pattern="[0-9]{16}" required #numero="ngModel" [ngClass]="{'is-invalid': numero.invalid && numero.touched}">
+            <div class="invalid-feedback">Debe contener 16 números.</div>
+          </div>
+          <div class="row">
+            <div class="col-6 mb-3">
+              <label class="form-label">Vencimiento (MM/AA)</label>
+              <input type="text" class="form-control" name="vencimiento" [(ngModel)]="tarjeta.vencimiento" maxlength="5" required #venc="ngModel" [ngClass]="{'is-invalid': venc.invalid && venc.touched}">
+            </div>
+            <div class="col-6 mb-3">
+              <label class="form-label">CVV</label>
+              <input type="password" class="form-control" name="cvv" [(ngModel)]="tarjeta.cvv" maxlength="3" pattern="[0-9]{3}" required #cvv="ngModel" [ngClass]="{'is-invalid': cvv.invalid && cvv.touched}">
+            </div>
+          </div>
+          <button type="submit" class="btn btn-success w-100 py-2 mt-3" [disabled]="pagoForm.invalid">Procesar Pago y Emitir Comprobante</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

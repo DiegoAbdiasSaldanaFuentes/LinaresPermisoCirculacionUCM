@@ -1,0 +1,48 @@
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card shadow-sm border-0">
+        <div class="card-header text-white" style="background-color: #9fc3e2;">
+          <h4 class="mb-0 text-dark">Consulta de Permiso de Circulación</h4>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <label class="form-label">Ingrese Patente del Vehículo</label>
+            <div class="input-group">
+              <input type="text" class="form-control text-uppercase" [(ngModel)]="patenteBusqueda" placeholder="Ej: ABCD12" maxlength="6">
+              <button class="btn btn-primary" type="button" (click)="buscarVehiculo()">Consultar</button>
+            </div>
+          </div>
+
+          <div *ngIf="mensajeError" class="alert alert-danger mt-3">
+            {{ mensajeError }}
+          </div>
+
+          <div *ngIf="vehiculoEncontrado" class="card mt-4 border-success">
+            <div class="card-header bg-success text-white">
+              Vehículo Encontrado
+            </div>
+            <div class="card-body">
+              <p><strong>Patente:</strong> {{ vehiculoEncontrado.patente }}</p>
+              <p><strong>Propietario:</strong> {{ vehiculoEncontrado.nombrePropietario }}</p>
+              <p><strong>Vehículo:</strong> {{ vehiculoEncontrado.marca }} {{ vehiculoEncontrado.modelo }} ({{ vehiculoEncontrado.anio }})</p>
+              <p><strong>Estado:</strong> 
+                <span class="badge" [ngClass]="vehiculoEncontrado.estado === 'PAGADO' ? 'bg-success' : 'bg-warning text-dark'">
+                  {{ vehiculoEncontrado.estado }}
+                </span>
+              </p>
+              <p><strong>Monto a Pagar:</strong> <span class="fw-bold text-danger">${{ vehiculoEncontrado.monto }}</span></p>
+
+              <button *ngIf="vehiculoEncontrado.estado === 'PENDIENTE'" class="btn btn-success w-100 mt-2" (click)="irAlPago(vehiculoEncontrado)">
+                Proceder al Pago
+              </button>
+              <div *ngIf="vehiculoEncontrado.estado === 'PAGADO'" class="alert alert-info mt-2 mb-0 text-center">
+                Este permiso ya se encuentra pagado.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
