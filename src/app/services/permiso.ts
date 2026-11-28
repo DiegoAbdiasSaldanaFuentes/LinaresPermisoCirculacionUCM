@@ -1,71 +1,127 @@
-import { Injectable } from '@angular/core';
-import { VehiculoPermiso, ComprobantePago } from '../models/permiso';
+export interface UsuarioSesion {
+  id: number;
+  rut: string;
+  nombre: string;
+  correo: string;
+  rol: 'cliente' | 'admin';
+}
 
-@Injectable({
-  providedIn: 'root'
-})
-export class PermisoService {
-  private readonly STORAGE_VEHICULOS = 'vehiculos_linares';
-  private readonly STORAGE_PAGOS = 'pagos_linares';
+export interface LoginResponse {
+  token: string;
+  usuario: UsuarioSesion;
+}
 
-  constructor() {
-    this.inicializarDatos();
-  }
+export interface Vehiculo {
+  id: number;
+  cliente_id: number;
+  municipalidad_id: number;
+  patente: string;
+  tipo: string;
+  marca: string;
+  modelo: string;
+  anio: number;
+  estado_permiso: 'PENDIENTE' | 'PARCIALMENTE_PAGADO' | 'PAGADO';
+  municipalidad?: string;
+}
 
-  private getVehiculos(): VehiculoPermiso[] {
-    return JSON.parse(localStorage.getItem(this.STORAGE_VEHICULOS) || '[]');
-  }
+export interface Cliente {
+  id: number;
+  rut: string;
+  nombre: string;
+  correo: string;
+  telefono: string;
+  vehiculos?: Vehiculo[];
+}
 
-  private setVehiculos(vehiculos: VehiculoPermiso[]): void {
-    localStorage.setItem(this.STORAGE_VEHICULOS, JSON.stringify(vehiculos));
-  }
+export interface TarifaPermiso {
+  id?: number;
+  municipalidad_id: number;
+  periodo: number;
+  tipo_vehiculo: string;
+  valor_base: number;
+  activo: boolean;
+}
 
-  private getPagos(): ComprobantePago[] {
-    return JSON.parse(localStorage.getItem(this.STORAGE_PAGOS) || '[]');
-  }
+export interface CargoAdicional {
+  id?: number;
+  municipalidad_id: number;
+  descripcion: string;
+  tipo_calculo: 'MONTO' | 'PORCENTAJE';
+  valor: number;
+  vigencia_desde: string;
+  vigencia_hasta: string;
+  activo: boolean;
+}
 
-  private setPagos(pagos: ComprobantePago[]): void {
-    localStorage.setItem(this.STORAGE_PAGOS, JSON.stringify(pagos));
-  }
+export interface DetalleCotizacionVehiculo {
+  vehiculo_id: number;
+  patente: string;
+  marca?: string;
+  modelo?: string;
+  valor_base: number;
+  cargos: number;
+  descuentos: number;
+  total_vehiculo: number;
+}
 
-  inicializarDatos(): void {
-    if (this.getVehiculos().length === 0) {
-      const vehiculosIniciales: VehiculoPermiso[] = [
-        { patente: 'ABCD12', rutPropietario: '12345678-9', nombrePropietario: 'Juan Pérez', marca: 'Toyota', modelo: 'Yaris', anio: 2020, monto: 54200, estado: 'PENDIENTE', vigencia: 2026, municipalidad: 'Ilustre Municipalidad de Linares' },
-        { patente: 'XYZW99', rutPropietario: '98765432-1', nombrePropietario: 'María Gómez', marca: 'Chevrolet', modelo: 'Sail', anio: 2022, monto: 61500, estado: 'PENDIENTE', vigencia: 2026, municipalidad: 'Ilustre Municipalidad de Linares' }
-      ];
-      this.setVehiculos(vehiculosIniciales);
-    }
-  }
+export interface CotizacionResponse {
+  cliente_id: number;
+  periodo: number;
+  detalle: DetalleCotizacionVehiculo[];
+  monto_total: number;
+  cuota_1: number;
+  cuota_2: number;
+}
 
-  buscarPorPatente(patente: string): VehiculoPermiso | null {
-    const vehiculos = this.getVehiculos();
-    const encontrado = vehiculos.find(v => v.patente.toUpperCase() === patente.toUpperCase());
-    return encontrado || null;
-  }
+export interface Cuota {
+  id: number;
+  compra_id: number;
+  numero_cuota: number;
+  monto: number;
+  estado: 'PENDIENTE' | 'PAGADO';
+  fecha_pago: string | null;
+}
 
-  registrarPago(comprobante: ComprobantePago): boolean {
-    try {
-      const pagos = this.getPagos();
-      const vehiculos = this.getVehiculos();
-      
-      const index = vehiculos.findIndex(v => v.patente.toUpperCase() === comprobante.patente.toUpperCase());
-      if (index === -1) return false; 
-      
-      vehiculos[index].estado = 'PAGADO';
-      pagos.push(comprobante);
+export interface Compra {
+  id: number;
+  cliente_id: number;
+  municipalidad_id: number;
+  periodo: number;
+  modalidad: 'TOTAL' | 'DOS_CUOTAS';
+  monto_total: number;
+  monto_pagado: number;
+  saldo_pendiente: number;
+  estado: 'PENDIENTE_PAGO' | 'PARCIALMENTE_PAGADO' | 'PAGADO';
+  fecha_creacion: string;
+  cuotas?: Cuota[];
+  detalles?: {
+    patente_snapshot: string;
+    valor_base_snapshot: number;
+    cargos_snapshot: number;
+    total_vehiculo_snapshot: number;
+  }[];
+  comprobantes?: Comprobante[];
+}
 
-      this.setVehiculos(vehiculos);
-      this.setPagos(pagos);
-      
-      return true;
-    } catch (e) {
-      console.error('Error al procesar el almacenamiento del pago', e);
-      return false;
-    }
-  }
-
-  obtenerHistorialPagos(): ComprobantePago[] {
-    return this.getPagos();
-  }
+export interface Comprobante {
+  id: number;
+  folio: string;
+  compra_id: number;
+  cuota_id?: number | null;
+  numero_cuota: number; // 0 = pago total, 1 o 2 = cuota
+  monto_pagado: number;
+  modalidad: 'TOTAL' | 'DOS_CUOTAS';
+  fecha_pago: string;
+  municipalidad?: string;
+  cliente_nombre?: string;
+  cliente_rut?: string;
+  periodo?: number;
+  monto_total_compra?: number;
+  saldo_pendiente?: number;
+  vehiculos?: {
+    patente: string;
+    valor_base: number;
+    cargos: number;
+    total: number;
+  }[];
 }
